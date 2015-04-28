@@ -10,7 +10,6 @@ import jade.content.onto.annotations.Slot;
  */
 public class Chosen implements Predicate {
 
-
     Offer offer;
 
     @Slot(mandatory = true)

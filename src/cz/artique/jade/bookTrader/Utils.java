@@ -13,7 +13,6 @@ import cz.artique.jade.bookTrader.ontology.Goal;
  */
 public class Utils {
 
-
     /** Funkce vypocitava uzitek agenta na zaklade knih, ktere vlastni a jeho cilu.
      *
      *  Uzitek se rovna souctu uzitku z knih, ktere agent vlastni a ma je v cilich a penez, ktere agent ma.

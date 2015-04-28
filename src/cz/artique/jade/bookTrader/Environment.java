@@ -37,39 +37,38 @@ public class Environment extends Agent {
     Ontology onto = BookOntology.getInstance();
     Random rnd = new Random();
 
-
     @Override
     protected void setup() {
         super.setup();
 
-        //napred je potreba rict agentovi, jakym zpusobem jsou zpravy kodovany, a jakou pouzivame ontologii
+        // napred je potreba rict agentovi, jakym zpusobem jsou zpravy kodovany, a jakou pouzivame ontologii
         this.getContentManager().registerLanguage(codec);
         this.getContentManager().registerOntology(onto);
 
-        //popis sluzby environment
+        // popis sluzby environment
         ServiceDescription sd = new ServiceDescription();
         sd.setType("environment");
         sd.setName("env");
 
-        //popis tohoto agenta a sluzeb, ktere nabizi
+        // popis tohoto agenta a sluzeb, ktere nabizi
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(this.getAID());
         dfd.addServices(sd);
 
-        //zaregistrovani s DF
+        // zaregistrovani s DF
         try {
             DFService.register(this, dfd);
         } catch (FIPAException e) {
             e.printStackTrace();
         }
 
-        //chovani, ktere vsem posle info o zacatku obchodovani
+        // chovani, ktere vsem posle info o zacatku obchodovani
         addBehaviour(new StartTradingBehavior());
-        //chovani, ktere periodicky vypisuje aktualni zisky agentu
+        // chovani, ktere periodicky vypisuje aktualni zisky agentu
         addBehaviour(new PrintAgentUtilityBehaviour(this));
-        //chovani, ktere se stara o vsechny requesty
+        // chovani, ktere se stara o vsechny requesty
         addBehaviour(new MessageDispatcherBehavior());
-        //chovani, ktere periodicky odstranuje transakce, ktere neprobehly vcas
+        // chovani, ktere periodicky odstranuje transakce, ktere neprobehly vcas
         addBehaviour(new UnfinishedTransactionsRemoverBehavior(this));
 
     }
@@ -84,13 +83,13 @@ public class Environment extends Agent {
         }
     }
 
-    //posleme vsem info o zacatku obchodovani, vygenerujeme prirazeni knih a cile
+    // posleme vsem info o zacatku obchodovani, vygenerujeme prirazeni knih a cile
     private class StartTradingBehavior extends OneShotBehaviour {
 
         @Override
         public void action() {
 
-            //najdeme vsechny obchodniky
+            // najdeme vsechny obchodniky
             ServiceDescription sd = new ServiceDescription();
             sd.setType("book-trader");
             DFAgentDescription dfd = new DFAgentDescription();
@@ -107,14 +106,13 @@ public class Environment extends Agent {
                 booksNames.addAll(Constants.getBooknames());
                 int bID = 0;
 
-                //vygenerujeme cile a knihy pro kazdeho agenta
+                // vygenerujeme cile a knihy pro kazdeho agenta
                 for (DFAgentDescription tr : traders) {
 
-                    Collections.shuffle(booksNames,rnd);
+                    Collections.shuffle(booksNames, rnd);
                     AgentInfo ai = new AgentInfo();
                     ArrayList<BookInfo> books = new ArrayList<BookInfo>();
                     ArrayList<Goal> goal = new ArrayList<Goal>();
-
 
                     for (int i = 0; i < 4; i++) {
                         BookInfo bi = new BookInfo();
@@ -129,7 +127,7 @@ public class Environment extends Agent {
                         bi.setBookName(booksNames.get(i));
                         Goal g = new Goal();
                         g.setBook(bi);
-                        g.setValue(Constants.getPrice(booksNames.get(i))+rnd.nextInt(40)-20);
+                        g.setValue(Constants.getPrice(booksNames.get(i)) + rnd.nextInt(40) - 20);
                         goal.add(g);
                     }
 
@@ -142,7 +140,6 @@ public class Environment extends Agent {
                     agentBooks.put(tr.getName().getName(), ai);
                     startMsg.addReceiver(tr.getName());
                 }
-
 
                 getContentManager().fillContent(startMsg, new Action(myAgent.getAID(), new StartTrading()));
 
@@ -159,7 +156,7 @@ public class Environment extends Agent {
         }
     }
 
-    //kazdych 15 vterin vypiseme, kdo ma jaky uzitek
+    // kazdych 15 vterin vypiseme, kdo ma jaky uzitek
     private class PrintAgentUtilityBehaviour extends TickerBehaviour {
 
         public PrintAgentUtilityBehaviour(Agent myAgent) {
@@ -200,17 +197,17 @@ public class Environment extends Agent {
 
             System.out.println();
             System.out.println();
-            for (int i = utils.size() - 1; i >=0; i--) {
+            for (int i = utils.size() - 1; i >= 0; i--) {
                 AgentUtil au = utils.get(i);
                 System.out.printf("%50s  %13f %5s \n", au.agent, au.util, au.goalMet ? "YES" : "NO");
-                //System.out.println(agentBooks.get(au.agent));
+                // System.out.println(agentBooks.get(au.agent));
             }
             System.out.println();
 
         }
     }
 
-    //kazdych 5 vterin smazeme transakce, ke kterym behem 5 vterin nedorazila druha polovina
+    // kazdych 5 vterin smazeme transakce, ke kterym behem 5 vterin nedorazila druha polovina
     private class UnfinishedTransactionsRemoverBehavior extends TickerBehaviour {
 
         public UnfinishedTransactionsRemoverBehavior(Agent myAgent) {
@@ -224,7 +221,7 @@ public class Environment extends Agent {
 
             long time = System.currentTimeMillis();
             for (TransactionInfo ti : unfinishedTransaction.values()) {
-                if (ti.getTimeReceived()-time > 5000)
+                if (ti.getTimeReceived() - time > 5000)
                     remove.add(ti.getSendOrder().getTradeConversationID());
             }
 
@@ -240,7 +237,7 @@ public class Environment extends Agent {
         }
     }
 
-    //rozdeleni requestu mezi dve chovani, ktera se o ne postaraji
+    // rozdeleni requestu mezi dve chovani, ktera se o ne postaraji
     private class MessageDispatcherBehavior extends CyclicBehaviour {
 
         @Override
@@ -266,22 +263,22 @@ public class Environment extends Agent {
                 System.err.println("Unexpected message: " + received.getContent());
             }
 
-            Action aa = (Action)ce;
+            Action aa = (Action) ce;
 
-            //pridani chovani pro MakeTransaction
+            // pridani chovani pro MakeTransaction
             if (aa.getAction() instanceof MakeTransaction) {
-                myAgent.addBehaviour(new HandleSendBehaviour(myAgent, (MakeTransaction)aa.getAction(), received));
+                myAgent.addBehaviour(new HandleSendBehaviour(myAgent, (MakeTransaction) aa.getAction(), received));
             }
 
-            //pridani chovani pro GetMyInfo
+            // pridani chovani pro GetMyInfo
             if (aa.getAction() instanceof GetMyInfo) {
-                myAgent.addBehaviour(new HandleInfoBehaviour(myAgent, (GetMyInfo)aa.getAction(), received));
+                myAgent.addBehaviour(new HandleInfoBehaviour(myAgent, (GetMyInfo) aa.getAction(), received));
             }
 
         }
     }
 
-    //chovani, ktere se stara o zaslani informaci o agentovi, ktery o to projevi zajem
+    // chovani, ktere se stara o zaslani informaci o agentovi, ktery o to projevi zajem
     private class HandleInfoBehaviour extends OneShotBehaviour {
 
         Agent myAgent;
@@ -297,13 +294,13 @@ public class Environment extends Agent {
         @Override
         public void action() {
 
-            //System.out.println("Got info request from " + request.getSender().getName());
+            // System.out.println("Got info request from " + request.getSender().getName());
 
             ACLMessage reply = request.createReply();
 
             String agentName = request.getSender().getName();
 
-            //zjistime informace
+            // zjistime informace
             AgentInfo ai = agentBooks.get(agentName);
 
             if (ai == null) {
@@ -313,7 +310,7 @@ public class Environment extends Agent {
                 return;
             }
 
-            //posleme je agentovi
+            // posleme je agentovi
             reply.setPerformative(ACLMessage.INFORM);
             try {
                 getContentManager().fillContent(reply, new Result(gmi, ai));
@@ -327,14 +324,13 @@ public class Environment extends Agent {
         }
     }
 
-
-    //zpracovani transakce mezi dvemi agenty
+    // zpracovani transakce mezi dvemi agenty
     private class HandleSendBehaviour extends OneShotBehaviour {
 
         MakeTransaction sendMsgContent;
         ACLMessage sendMsg;
 
-        private HandleSendBehaviour(Agent a, MakeTransaction sendMsgContent, ACLMessage sendMsg ) {
+        private HandleSendBehaviour(Agent a, MakeTransaction sendMsgContent, ACLMessage sendMsg) {
             super(a);
             this.sendMsgContent = sendMsgContent;
             this.sendMsg = sendMsg;
@@ -345,22 +341,20 @@ public class Environment extends Agent {
 
             String transactionID = sendMsgContent.getTradeConversationID();
 
-
-            //prisla info od jednoho agenta, zapamatujeme si transakci
-            if (!unfinishedTransaction.containsKey(transactionID)) { //this is the first time we know about transaction
+            // prisla info od jednoho agenta, zapamatujeme si transakci
+            if (!unfinishedTransaction.containsKey(transactionID)) { // this is the first time we know about transaction
                 unfinishedTransaction.put(transactionID, new TransactionInfo(sendMsgContent, sendMsg, System.currentTimeMillis()));
                 return;
             }
 
-            //prisla info od druheho ucastnika transakce
+            // prisla info od druheho ucastnika transakce
             ACLMessage sendMsg1 = unfinishedTransaction.get(transactionID).getSenderMessage();
             ACLMessage sendMsg2 = sendMsg;
 
             MakeTransaction sendOrder1 = unfinishedTransaction.get(transactionID).getSendOrder();
             MakeTransaction sendOrder2 = sendMsgContent;
 
-
-            //kontrola, ze sedi odesilatele a prijemci v obou zpravach
+            // kontrola, ze sedi odesilatele a prijemci v obou zpravach
             if (!sendOrder1.getReceiverName().equals(sendOrder2.getSenderName()) ||
                     !sendOrder1.getSenderName().equals(sendOrder2.getReceiverName())) {
 
@@ -373,7 +367,7 @@ public class Environment extends Agent {
             AgentInfo agentInfo1 = agentBooks.get(agentName1);
             AgentInfo agentInfo2 = agentBooks.get(agentName2);
 
-            //kontrola, ze agenti maji vsechny knihy, ktere chteji odeslat
+            // kontrola, ze agenti maji vsechny knihy, ktere chteji odeslat
             ArrayList<BookInfo> ag1MissingBooks = getMissingBooks(agentInfo1, sendOrder1.getSendingBooks());
             if (ag1MissingBooks.size() > 0) {
                 sendFailure(sendMsg1, sendMsg2, agentName1 + " does not have " + ag1MissingBooks);
@@ -386,7 +380,7 @@ public class Environment extends Agent {
                 return;
             }
 
-            //kontrola, ze agenti maji dost penez
+            // kontrola, ze agenti maji dost penez
             if (agentInfo1.getMoney() < sendOrder1.getSendingMoney()) {
                 sendFailure(sendMsg1, sendMsg2, agentName1 + " does not have enough money");
                 return;
@@ -397,7 +391,7 @@ public class Environment extends Agent {
                 return;
             }
 
-            //kontrola, ze sedi knihy, ktere agent odesila a druhy agent ocekava
+            // kontrola, ze sedi knihy, ktere agent odesila a druhy agent ocekava
             if (sendOrder1.getSendingBooks() != null && sendOrder2.getReceivingBooks() != null)
                 if (sendOrder1.getSendingBooks().size() != sendOrder2.getReceivingBooks().size()) {
                     sendFailure(sendMsg1, sendMsg2, "orders do not match");
@@ -424,7 +418,7 @@ public class Environment extends Agent {
                 }
             }
 
-            //kontrola, ze sedi mnozstvi penez, ktere agenti posilaji a ocekavaji
+            // kontrola, ze sedi mnozstvi penez, ktere agenti posilaji a ocekavaji
             if (sendOrder1.getSendingMoney() != sendOrder2.getReceivingMoney()) {
                 sendFailure(sendMsg1, sendMsg2, "orders do not match");
                 return;
@@ -435,7 +429,7 @@ public class Environment extends Agent {
                 return;
             }
 
-            //odstranime knihy, ktere agent odesila
+            // odstranime knihy, ktere agent odesila
             ArrayList<BookInfo> books = agentInfo1.getBooks();
             ArrayList<BookInfo> removeBooks = sendOrder1.getSendingBooks();
             for (int i = 0; i < removeBooks.size(); i++) {
@@ -447,7 +441,7 @@ public class Environment extends Agent {
                 }
             }
 
-            //to same pro druheho agenta
+            // to same pro druheho agenta
             books = agentInfo2.getBooks();
             removeBooks = sendOrder2.getSendingBooks();
             for (int i = 0; i < removeBooks.size(); i++) {
@@ -459,31 +453,30 @@ public class Environment extends Agent {
                 }
             }
 
-            //pridame knihy, ktere agent dostava
+            // pridame knihy, ktere agent dostava
             books = agentInfo1.getBooks();
             ArrayList<BookInfo> addBooks = sendOrder2.getSendingBooks();
             for (int i = 0; i < addBooks.size(); i++) {
                 books.add(addBooks.get(i));
             }
 
-            //a zase to same pro druheho
+            // a zase to same pro druheho
             books = agentInfo2.getBooks();
             addBooks = sendOrder1.getSendingBooks();
             for (int i = 0; i < addBooks.size(); i++) {
                 books.add(addBooks.get(i));
             }
 
-            //System.out.println("Transaction: " + sendOrder1);
+            // System.out.println("Transaction: " + sendOrder1);
 
+            // prevedeme penize mezi agenty
+            agentInfo1.setMoney(agentInfo1.getMoney() - sendOrder1.getSendingMoney());
+            agentInfo1.setMoney(agentInfo1.getMoney() + sendOrder2.getSendingMoney());
 
-            //prevedeme penize mezi agenty
-            agentInfo1.setMoney(agentInfo1.getMoney()-sendOrder1.getSendingMoney());
-            agentInfo1.setMoney(agentInfo1.getMoney()+sendOrder2.getSendingMoney());
+            agentInfo2.setMoney(agentInfo2.getMoney() - sendOrder2.getSendingMoney());
+            agentInfo2.setMoney(agentInfo2.getMoney() + sendOrder1.getSendingMoney());
 
-            agentInfo2.setMoney(agentInfo2.getMoney()-sendOrder2.getSendingMoney());
-            agentInfo2.setMoney(agentInfo2.getMoney()+sendOrder1.getSendingMoney());
-
-            //posleme obema info, ze se prevod povedl
+            // posleme obema info, ze se prevod povedl
             ACLMessage reply1 = sendMsg1.createReply();
             ACLMessage reply2 = sendMsg2.createReply();
             reply1.setPerformative(ACLMessage.INFORM);
@@ -493,12 +486,12 @@ public class Environment extends Agent {
             send(reply1);
             send(reply2);
 
-            //System.out.println(agentName1 + " " + agentInfo1.toString());
-            //System.out.println(agentName2 + " " + agentInfo2.toString());
+            // System.out.println(agentName1 + " " + agentInfo1.toString());
+            // System.out.println(agentName2 + " " + agentInfo2.toString());
 
         }
 
-        //poslani chyby obema agentum, chyba je jako text, dulezity je jen performative
+        // poslani chyby obema agentum, chyba je jako text, dulezity je jen performative
         void sendFailure(ACLMessage msg1, ACLMessage msg2, String text) {
             ACLMessage reply1 = msg1.createReply();
             ACLMessage reply2 = msg2.createReply();
@@ -510,8 +503,7 @@ public class Environment extends Agent {
             send(reply2);
         }
 
-
-        //najde knihy, ktere agent chce poslat, ale nema je
+        // najde knihy, ktere agent chce poslat, ale nema je
         ArrayList<BookInfo> getMissingBooks(AgentInfo agent, ArrayList<BookInfo> books) {
             ArrayList<BookInfo> missing = new ArrayList<BookInfo>();
             for (BookInfo bi : books) {

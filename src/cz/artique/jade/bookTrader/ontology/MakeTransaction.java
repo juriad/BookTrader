@@ -21,7 +21,6 @@ public class MakeTransaction implements AgentAction {
     ArrayList<BookInfo> receivingBooks;
     double receivingMoney;
 
-
     @Slot(mandatory = true)
     public String getSenderName() {
         return senderName;

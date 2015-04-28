@@ -15,8 +15,7 @@ public class BookOntology extends BeanOntology {
 
         try {
             add("mas.cv4.onto");
-        }
-        catch (BeanOntologyException be) {
+        } catch (BeanOntologyException be) {
             be.printStackTrace();
         }
     }
