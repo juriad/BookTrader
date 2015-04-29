@@ -75,11 +75,7 @@ class StartTradingBehaviour extends AchieveREResponder {
 
                 Library.LIBRARY.update(ai.getBooks(), ai.getGoals(), ai.getMoney());
 
-                // pridame chovani, ktere jednou za dve vteriny zkusi koupit vybranou knihu
-                getAgent().addBehaviour(new RegularTradingBehaviour(myAgent, 2000));
-
-                // pridame chovani, ktere se stara o prodej knih
-                getAgent().addBehaviour(new SellBook(myAgent, MessageTemplate.MatchPerformative(ACLMessage.CFP)));
+                startAllBehaviours();
 
                 // odpovime, ze budeme obchodovat (ta zprava se v prostredi ignoruje, ale je slusne ji poslat)
                 ACLMessage reply = request.createReply();
@@ -98,5 +94,16 @@ class StartTradingBehaviour extends AchieveREResponder {
         }
 
         return super.handleRequest(request);
+    }
+
+    private void startAllBehaviours() {
+        // checks the library for new known books
+        getAgent().addBehaviour(new PriceScannerBehaviourPlanner(myAgent, 100, 1300));
+        
+        // buyer
+        getAgent().addBehaviour(new RegularTradingBehaviour(myAgent, 100));
+
+        // seller
+        getAgent().addBehaviour(new SellBook(myAgent, MessageTemplate.MatchPerformative(ACLMessage.CFP)));
     }
 }

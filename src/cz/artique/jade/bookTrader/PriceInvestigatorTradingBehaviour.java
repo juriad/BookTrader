@@ -4,6 +4,7 @@ import jade.core.Agent;
 import jade.lang.acl.ACLMessage;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import cz.artique.jade.bookTrader.ontology.BookInfo;
 
@@ -21,8 +22,10 @@ class PriceInvestigatorTradingBehaviour extends AbstractTradingBehaviour {
     }
 
     @Override
-    protected ArrayList<BookInfo> getBooksToObtain() {
-        return books;
+    protected LinkedList<ArrayList<BookInfo>> getBooksToObtain() {
+        LinkedList<ArrayList<BookInfo>> arrayList = new LinkedList<ArrayList<BookInfo>>();
+        arrayList.add(books);
+        return arrayList;
     }
 
     @Override

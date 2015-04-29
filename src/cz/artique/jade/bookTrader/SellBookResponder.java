@@ -19,7 +19,9 @@ import jade.proto.SSContractNetResponder;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import cz.artique.jade.bookTrader.Library.ListTest;
 import cz.artique.jade.bookTrader.ontology.BookInfo;
 import cz.artique.jade.bookTrader.ontology.BookOntology;
 import cz.artique.jade.bookTrader.ontology.ChooseFrom;
@@ -30,8 +32,8 @@ import cz.artique.jade.bookTrader.ontology.SellMeBooks;
 
 class SellBookResponder extends SSContractNetResponder {
 
-    Codec codec = new SLCodec();
-    Ontology onto = BookOntology.getInstance();
+    private Codec codec = new SLCodec();
+    private Ontology onto = BookOntology.getInstance();
 
     /**
      * 
@@ -54,11 +56,11 @@ class SellBookResponder extends SSContractNetResponder {
 
             double fitness = 0;
             for (BookInfo bi : books) {
-                BookInfo bookInfoByBookName = Library.LIBRARY.getBookInfoByBookName(bi.getBookName());
+                BookInfo bookInfoByBookName = Library.LIBRARY.getMyBookInfo(bi);
                 if (bookInfoByBookName == null) {
                     throw new RefuseException("");
                 }
-                Double estimatePrice = Library.LIBRARY.getEstimatedPrice(bi);
+                Double estimatePrice = Library.LIBRARY.getEstimatedPrice(bi, false);
                 if (estimatePrice == null) {
                     throw new RefuseException("");
                 }
@@ -90,8 +92,24 @@ class SellBookResponder extends SSContractNetResponder {
     }
 
     private ArrayList<Offer> generateOffers(double fitness) {
-        // TODO Auto-generated method stub
-        return null;
+        ArrayList<ArrayList<BookInfo>> all = Library.genSubsets(Library.LIBRARY.getBooks(), Library.LIBRARY.getBooks().size(), new ListTest<BookInfo>() {
+            @Override
+            public boolean test(List<BookInfo> test) {
+                return true;
+            }
+        });
+        ArrayList<Offer> offers = new ArrayList<Offer>();
+        for (ArrayList<BookInfo> comb : all) {
+            double price = Library.getTotalPrice(comb);
+            if (fitness >= price) {
+                Offer o = new Offer();
+                o.setBooks(comb);
+                o.setMoney(fitness - price);
+                offers.add(o);
+                // TODO constant
+            }
+        }
+        return offers;
     }
 
     // agent se rozhodl, ze nabidku prijme

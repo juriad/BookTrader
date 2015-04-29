@@ -37,9 +37,11 @@ class ObtainBook extends ContractNetInitiator {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private Runnable callback;
 
-    public ObtainBook(Agent a, ACLMessage cfp) {
+    public ObtainBook(Agent a, ACLMessage cfp, Runnable callback) {
         super(a, cfp);
+        this.callback = callback;
     }
 
     private Offer bestOffer; // musime si pamatovat, co jsme nabidli
@@ -83,6 +85,7 @@ class ObtainBook extends ContractNetInitiator {
 
             getAgent().getContentManager().fillContent(transReq, new Action(envs[0].getName(), mt));
             getAgent().addBehaviour(new SendBook(myAgent, transReq));
+            callback.run();
         } catch (UngroundedException e) {
             e.printStackTrace();
         } catch (OntologyException e) {
@@ -123,17 +126,18 @@ class ObtainBook extends ContractNetInitiator {
 
                     double fitness = o.getMoney();
                     boolean foundAll = true;
-                    if (o.getBooks() != null)
+                    if (o.getBooks() != null) {
                         for (BookInfo bi : o.getBooks()) {
-                            BookInfo bookInfoByBookName = Library.LIBRARY.getBookInfoByBookName(bi.getBookName());
+                            BookInfo bookInfoByBookName = Library.LIBRARY.getMyBookInfo(bi);
                             if (bookInfoByBookName != null) {
                                 bi.setBookID(bookInfoByBookName.getBookID());
-                                fitness += Library.LIBRARY.getEstimatedPrice(bi);
+                                fitness += Library.LIBRARY.getEstimatedPrice(bi, false);
                             } else {
                                 foundAll = false;
                                 break;
                             }
                         }
+                    }
 
                     if (foundAll) {
                         if (fitness < bestFitness) {
@@ -155,7 +159,7 @@ class ObtainBook extends ContractNetInitiator {
         double estPrice = 0;
         if (shouldReceive != null) {
             for (BookInfo bi : shouldReceive) {
-                Double est = Library.LIBRARY.getEstimatedPrice(bi);
+                Double est = Library.LIBRARY.getEstimatedPrice(bi, false);
                 if (est != null) {
                     estPrice += est;
                 } else {

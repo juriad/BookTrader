@@ -15,6 +15,7 @@ import jade.lang.acl.ACLMessage;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 
 import cz.artique.jade.bookTrader.ontology.BookInfo;
 import cz.artique.jade.bookTrader.ontology.BookOntology;
@@ -34,10 +35,12 @@ public abstract class AbstractTradingBehaviour extends TickerBehaviour {
         super(a, period);
     }
 
-    protected abstract ArrayList<BookInfo> getBooksToObtain();
+    protected abstract LinkedList<ArrayList<BookInfo>> getBooksToObtain();
+    
+    protected LinkedList<ArrayList<BookInfo>> queue = new LinkedList<ArrayList<BookInfo>>();
 
     protected abstract void delegateMessage(ACLMessage buyBook);
-
+    
     @Override
     protected void onTick() {
         try {
@@ -59,9 +62,17 @@ public abstract class AbstractTradingBehaviour extends TickerBehaviour {
                     continue;
                 buyBook.addReceiver(dfad.getName());
             }
-
+            
+            if(queue.isEmpty()) {
+                queue = getBooksToObtain();
+            }
+            if(queue.isEmpty()) {
+                return;
+            }
+            
+            ArrayList<BookInfo> books = queue.removeFirst();
             SellMeBooks smb = new SellMeBooks();
-            smb.setBooks(getBooksToObtain());
+            smb.setBooks(books);
 
             getAgent().getContentManager().fillContent(buyBook, new Action(myAgent.getAID(), smb));
             delegateMessage(buyBook);

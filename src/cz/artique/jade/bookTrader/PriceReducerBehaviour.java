@@ -52,7 +52,7 @@ public class PriceReducerBehaviour extends ContractNetInitiator {
                     boolean skipOffer = false;
                     if (o.getBooks() != null) {
                         for (BookInfo bi : o.getBooks()) {
-                            Double est = Library.LIBRARY.getEstimatedPrice(bi);
+                            Double est = Library.LIBRARY.getEstimatedPrice(bi, false);
                             if (est == null) {
                                 skipOffer = true;
                                 break;

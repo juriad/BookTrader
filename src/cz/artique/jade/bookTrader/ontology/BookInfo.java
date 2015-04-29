@@ -33,5 +33,10 @@ public class BookInfo implements Concept {
     public String toString() {
         return "[" + bookName + "," + bookID + "]";
     }
+    
+    @Override
+    public int hashCode() {
+        return bookName.hashCode();
+    }
 
 }

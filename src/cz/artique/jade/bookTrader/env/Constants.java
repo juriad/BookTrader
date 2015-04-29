@@ -1,4 +1,4 @@
-package cz.artique.jade.bookTrader;
+package cz.artique.jade.bookTrader.env;
 
 import java.util.HashMap;
 import java.util.Set;

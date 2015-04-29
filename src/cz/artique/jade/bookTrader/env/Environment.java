@@ -1,4 +1,4 @@
-package cz.artique.jade.bookTrader;
+package cz.artique.jade.bookTrader.env;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
