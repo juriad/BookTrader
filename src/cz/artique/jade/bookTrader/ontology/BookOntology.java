@@ -14,7 +14,7 @@ public class BookOntology extends BeanOntology {
         super("book-ontology");
 
         try {
-            add("mas.cv4.onto");
+            add("cz.artique.jade.bookTrader.ontology");
         } catch (BeanOntologyException be) {
             be.printStackTrace();
         }

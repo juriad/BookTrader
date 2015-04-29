@@ -52,21 +52,28 @@ class SellBookResponder extends SSContractNetResponder {
             SellMeBooks smb = (SellMeBooks) ac.getAction();
             ArrayList<BookInfo> books = smb.getBooks();
 
+            System.out.print("Somebody is requesting: ");
+
             ArrayList<BookInfo> sellBooks = new ArrayList<BookInfo>();
 
             double fitness = 0;
             for (BookInfo bi : books) {
+                System.out.print(bi.getBookName() + ", ");
                 BookInfo bookInfoByBookName = Library.LIBRARY.getMyBookInfo(bi);
                 if (bookInfoByBookName == null) {
+                    System.out.println("fail 1");
                     throw new RefuseException("");
                 }
                 Double estimatePrice = Library.LIBRARY.getEstimatedPrice(bi, false);
                 if (estimatePrice == null) {
-                    throw new RefuseException("");
+                    double inventedEstimate = Library.LIBRARY.inventEstimate(bi);
+                    System.out.println("using invented estimate: " + inventedEstimate);
+                    estimatePrice = inventedEstimate;
                 }
                 fitness += estimatePrice;
                 sellBooks.add(bookInfoByBookName);
             }
+            System.out.println();
 
             ChooseFrom cf = new ChooseFrom();
 
@@ -100,12 +107,18 @@ class SellBookResponder extends SSContractNetResponder {
         });
         ArrayList<Offer> offers = new ArrayList<Offer>();
         for (ArrayList<BookInfo> comb : all) {
-            double price = Library.getTotalPrice(comb);
-            if (fitness >= price) {
+            Double price = Library.getTotalPrice(comb, 0.2);
+            if (price != null && fitness >= price) {
                 Offer o = new Offer();
                 o.setBooks(comb);
                 o.setMoney(fitness - price);
                 offers.add(o);
+                System.out.print("offer: ");
+                for (BookInfo bookInfo : comb) {
+                    System.out.print(bookInfo.getBookName() + ", ");
+                }
+                System.out.println(" and " + (fitness - price));
+
                 // TODO constant
             }
         }
@@ -138,6 +151,16 @@ class SellBookResponder extends SSContractNetResponder {
             if (c.getOffer().getBooks() == null) {
                 c.getOffer().setBooks(new ArrayList<BookInfo>());
             }
+
+            System.out.print("Our offer was accepted: ");
+            for (BookInfo bi : cf.getWillSell()) {
+                System.out.print(bi.getBookName() + ", ");
+            }
+            System.out.print(" for ");
+            for (BookInfo bi : c.getOffer().getBooks()) {
+                System.out.print(bi.getBookName() + ", ");
+            }
+            System.out.println(" and " + c.getOffer().getMoney());
 
             mt.setReceivingBooks(c.getOffer().getBooks());
             mt.setReceivingMoney(c.getOffer().getMoney());

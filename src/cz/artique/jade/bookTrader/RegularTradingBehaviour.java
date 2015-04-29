@@ -42,6 +42,7 @@ class RegularTradingBehaviour extends AbstractTradingBehaviour {
                 profitable.add(book);
             }
         }
+        System.out.println("There are " + profitable.size() + " books.");
 
         ArrayList<ArrayList<BookInfo>> all = Library.genSubsets(profitable, 2, new ListTest<BookInfo>() {
             @Override
@@ -52,7 +53,7 @@ class RegularTradingBehaviour extends AbstractTradingBehaviour {
         Collections.sort(all, new Comparator<ArrayList<BookInfo>>() {
             @Override
             public int compare(ArrayList<BookInfo> o1, ArrayList<BookInfo> o2) {
-                return -Double.compare(Library.compProfit(o1), Library.compProfit(o2));
+                return -Double.compare(Library.getTotalProfit(o1), Library.getTotalProfit(o2));
             }
         });
 

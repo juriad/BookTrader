@@ -131,7 +131,12 @@ class ObtainBook extends ContractNetInitiator {
                             BookInfo bookInfoByBookName = Library.LIBRARY.getMyBookInfo(bi);
                             if (bookInfoByBookName != null) {
                                 bi.setBookID(bookInfoByBookName.getBookID());
-                                fitness += Library.LIBRARY.getEstimatedPrice(bi, false);
+                                Double estimatedPrice = Library.LIBRARY.getEstimatedPrice(bi, false);
+                                if (estimatedPrice == null) {
+                                    foundAll = false;
+                                    break;
+                                }
+                                fitness += estimatedPrice;
                             } else {
                                 foundAll = false;
                                 break;

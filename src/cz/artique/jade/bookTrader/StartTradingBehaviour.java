@@ -98,10 +98,10 @@ class StartTradingBehaviour extends AchieveREResponder {
 
     private void startAllBehaviours() {
         // checks the library for new known books
-        getAgent().addBehaviour(new PriceScannerBehaviourPlanner(myAgent, 100, 1300));
+        getAgent().addBehaviour(new PriceScannerBehaviourPlanner(myAgent, 1000, 5000));
         
         // buyer
-        getAgent().addBehaviour(new RegularTradingBehaviour(myAgent, 100));
+        getAgent().addBehaviour(new RegularTradingBehaviour(myAgent, 1000));
 
         // seller
         getAgent().addBehaviour(new SellBook(myAgent, MessageTemplate.MatchPerformative(ACLMessage.CFP)));

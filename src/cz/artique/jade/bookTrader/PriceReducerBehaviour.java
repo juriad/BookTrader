@@ -31,7 +31,6 @@ public class PriceReducerBehaviour extends ContractNetInitiator {
     // zpracovani nabidek od prodavajicich
     @Override
     protected void handleAllResponses(Vector responses, Vector acceptances) {
-
         double minimumFitness = Double.MAX_VALUE;
 
         for (Object funckingObject : responses) {
@@ -78,6 +77,7 @@ public class PriceReducerBehaviour extends ContractNetInitiator {
         }
 
         if (minimumFitness < Double.MAX_VALUE) {
+            System.out.println("Setting estimate for " + book.getBookName() + " to " + minimumFitness);
             Library.LIBRARY.updateBookEstimate(book, minimumFitness);
         }
     }

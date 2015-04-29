@@ -11,20 +11,24 @@ import cz.artique.jade.bookTrader.ontology.Goal;
 public enum Library {
     LIBRARY;
 
+    private static final double INVENTED_ESTIMATE_PRICE_DROP = 1.2;
+
     /**
      * 
      */
     private static final long serialVersionUID = 1L;
 
-    private HashMap<String, Double> estimates;
+    private HashMap<String, Double> estimates = new HashMap<String, Double>();
 
-    private HashSet<String> knownBooks;
+    private HashMap<String, Double> inventedEstimates = new HashMap<String, Double>();
 
-    private ArrayList<BookInfo> books;
+    private HashSet<String> knownBooks = new HashSet<String>();
 
-    private ArrayList<Goal> goals;
+    private ArrayList<BookInfo> books = new ArrayList<BookInfo>();
 
-    private double money;
+    private ArrayList<Goal> goals = new ArrayList<Goal>();
+
+    private double money = 0;
 
     public double getMoney() {
         return money;
@@ -73,6 +77,19 @@ public enum Library {
             }
         }
         return estimates.get(bi.getBookName());
+    }
+
+    public double inventEstimate(BookInfo bi) {
+        if (!inventedEstimates.containsKey(bi.getBookName())) {
+            double price = 0;
+            for (Goal g : goals) {
+                price += g.getValue();
+            }
+            inventedEstimates.put(bi.getBookName(), price);
+        } else {
+            inventedEstimates.put(bi.getBookName(), inventedEstimates.get(bi.getBookName()) / INVENTED_ESTIMATE_PRICE_DROP);
+        }
+        return inventedEstimates.get(bi.getBookName());
     }
 
     public void updateBookEstimate(BookInfo book, double minimumFitness) {
@@ -133,13 +150,17 @@ public enum Library {
         return profit;
     }
 
-    public static double getTotalPrice(ArrayList<BookInfo> o) {
-        double profit = 0;
+    public static Double getTotalPrice(ArrayList<BookInfo> o, double coefForNonGoals) {
+        double price = 0;
         for (BookInfo bi : o) {
-            double goalPrice = Library.LIBRARY.getEstimatedPrice(bi, false);
-            profit += goalPrice;
+            Double bookPrice = Library.LIBRARY.getEstimatedPrice(bi, false);
+            if (bookPrice == null) {
+                return null;
+            }
+            Goal goal = Library.LIBRARY.getGoal(bi);
+            price += goal != null ? bookPrice : bookPrice * coefForNonGoals;
         }
-        return profit;
+        return price;
     }
 
     public HashSet<String> getKnownBooks() {

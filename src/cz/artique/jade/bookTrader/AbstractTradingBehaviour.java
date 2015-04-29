@@ -36,11 +36,11 @@ public abstract class AbstractTradingBehaviour extends TickerBehaviour {
     }
 
     protected abstract LinkedList<ArrayList<BookInfo>> getBooksToObtain();
-    
+
     protected LinkedList<ArrayList<BookInfo>> queue = new LinkedList<ArrayList<BookInfo>>();
 
     protected abstract void delegateMessage(ACLMessage buyBook);
-    
+
     @Override
     protected void onTick() {
         try {
@@ -62,15 +62,27 @@ public abstract class AbstractTradingBehaviour extends TickerBehaviour {
                     continue;
                 buyBook.addReceiver(dfad.getName());
             }
-            
-            if(queue.isEmpty()) {
+
+            if (queue.isEmpty()) {
+                System.out.println("Regenerating queue.");
                 queue = getBooksToObtain();
             }
-            if(queue.isEmpty()) {
+            if (queue.isEmpty()) {
                 return;
             }
-            
+
             ArrayList<BookInfo> books = queue.removeFirst();
+
+            if (this instanceof RegularTradingBehaviour) {
+                System.out.print("Trying to buy: ");
+                for (BookInfo bookInfo : books) {
+                    System.out.print(bookInfo.getBookName() + ", ");
+                }
+                System.out.println();
+            } else {
+                System.out.println("Trying to estimate price of " + books.get(0).getBookName());
+            }
+
             SellMeBooks smb = new SellMeBooks();
             smb.setBooks(books);
 

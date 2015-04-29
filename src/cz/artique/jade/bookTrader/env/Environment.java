@@ -160,7 +160,7 @@ public class Environment extends Agent {
     private class PrintAgentUtilityBehaviour extends TickerBehaviour {
 
         public PrintAgentUtilityBehaviour(Agent myAgent) {
-            super(myAgent, 15000);
+            super(myAgent, 1000);
         }
 
         private class AgentUtil implements Comparable<AgentUtil> {
